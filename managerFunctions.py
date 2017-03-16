@@ -1,9 +1,10 @@
-from createDB import createtables,insertToTable,updateTable,deleteFromTable,fetchAllData,fetchData,
+import createDB 
 from AfricasTalkingGateway import AfricasTalkingGateway, AfricasTalkingGatewayException
 
 #This function add new contacts  by calling method insertToTable
 
-def add(fname ,lname, pnumber):
+def add_contact(fname ,lname, pnumber):
+	
 
 	if fname != "" and lname != "":
 
@@ -13,7 +14,13 @@ def add(fname ,lname, pnumber):
 
 				pnumber = int('254'+ pnumber[1:10])
 
-				insertToTable([fname,lname,pnumber])
+
+				if createDB.fetch_last_name(lname) is True:
+
+						createDB.insert_to_table([fname,lname,pnumber])
+
+				else:
+					return "Sorry! That last name already exixts"
 
 			else:
 
@@ -27,11 +34,11 @@ def add(fname ,lname, pnumber):
 
 #This function search for  exixting contacts  by calling method fetchData with the first name of the contact
 
-def search(fname):
+def search_contact(fname):
 
 	if fname != "":
 
-		return fetchData(fname)
+		return createDB.fetch_data(fname)
 
 	else:
 
@@ -41,11 +48,11 @@ def search(fname):
 
 #This function sends text  by calling method fetchData
 
-def sendText(fname,mess):
+def send_text(fname,mess):
 
 	if fname != "":
 
-		destination = fetchData(fname)
+		destination = createDB.fetch_data(fname)
 		message = mess
 
 		username = "eunic"
@@ -71,31 +78,31 @@ def sendText(fname,mess):
 
 #This function edits conatct  by calling method updateTable
 
-def editContact(fname):
+#def editContact(fname):
 
-	if fname != "":
+	#if fname != "":
 
-		phonenumber = updateTable(fname)
+		#phonenumber = updateTable(fname)
 
-	else:
+	#else:
 
-		return "Name should not be empty"
+		#return "Name should not be empty"
 
 
 #This function enables user to view the conatct list by calling method fetchAllData
 
-def viewContacts():
+def view_contact():
 
-	fetchAllData():
+	return createDB.fetch_all_data()
 
 
 #This function enables user to delete a conatct by calling method deleteFromTable
 
-def deleteContact(fname):
+def delete_contact(fname):
 
 	if fname != "":
 
-		return deleteFromTable(fname)
+		return createDB.delete_from_table(fname)
 
 	else:
 
