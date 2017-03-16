@@ -6,7 +6,7 @@ def connection():
   conn = sqlite3.connect('/media/cel00584/My Docs/softwares/consoleApp/sqlite/bin/contactManager.db')
   return conn
 
-def createtables():
+def create_tables():
   conn = connection()
   c = conn.cursor()
 
@@ -22,7 +22,7 @@ def createtables():
   conn.close()
 
 
-def insertToTable(valuelist):
+def insert_to_table(valuelist):
 
   conn = connection()
   c = conn.cursor()
@@ -35,28 +35,26 @@ def insertToTable(valuelist):
   conn.close()
 
 
-def updateTable(fname):
+#def updateTable(newNumber,fname):
 
-  conn = connection()
-  c = conn.cursor()
+  #conn = connection()
+  #c = conn.cursor()
 
-  contactToEdit = fetchData(fname)
+  #contactToEdit = fetchData(fname)
 
-  if contactToEdit != "":
-    c.execute('UPDATE contacts SET ')
+  #if contactToEdit != "":
+    #c.execute('UPDATE contacts SET phoneNumber = ? WHERE last_name = ?',(newNumber,fname,))
 #finish this update query
-  conn.commit()
-  conn.close()
+  #conn.commit()
+  #conn.close()
 
 
-
-
-def deleteFromTable(fname):
+def delete_from_table(fname):
 
   conn = connection()
   c = conn.cursor()
 
-  contactToDelete = fetchData(fname)
+  contactToDelete = fetch_data(fname)
 
   print("1 to confirm you want to delete %d" %contactToDelete)
   confirm = input()
@@ -76,7 +74,7 @@ def deleteFromTable(fname):
 
 
 
-def fetchAllData():
+def fetch_all_data():
   conn = connection()
   c = conn.cursor()
 
@@ -98,54 +96,82 @@ def fetchAllData():
 
 
 
-def fetchData(fname):
+def fetch_data(fname):
 
   name1 = []
 
   conn = connection()
   c = conn.cursor()
 
-  c.execute('SELECT * from contacts WHERE first_name = ?',(fname,))
+  c.execute('SELECT count(*) from contacts WHERE first_name = ?',(fname,))
 
   no_rows = c.fetchall()
+  no_rows1 = [int(i[0]) for i in no_rows]
 
-  if no_rows == 1:
+  if(no_rows1 != []):
 
-    for row in no_rows:
+    if no_rows1[0] == 1:
 
-      return row[0]
+      c.execute('SELECT phoneNumber from contacts WHERE first_name = ?',(fname,))
+      result = c.fetchall()
 
-  elif no_rows > 1:
+      for res_row in result:
 
-    print("Which %s?" %fname)
+        return res_row[0]
 
-    for row in no_rows:
+    elif no_rows1[0] > 1:
 
-      name1.append(row[2])
+      print("Which %s?" %fname)
 
-    for i in range(1,len(name1)):
+      c.execute('SELECT last_name from contacts WHERE first_name = ?',(fname,))
+      result = c.fetchall()
 
-       print("[%d] %s" %(i, name1[i]))
+      for res_row1 in result:
 
-    contact = int(input())
+        name1.append(res_row1[0])
 
-    c.execute('SELECT phoneNumber FROM contacts WHERE last_name = ?', (name1[contact-1],))
+      for i in range(0,len(name1)):
 
-    nofrows = c.fetchall()
+         print("[%d] %s" %(i, name1[i]))
 
-    for rows in nofrows:
+      contact = int(input())
 
-      return rows[0]
+      c.execute('SELECT phoneNumber FROM contacts WHERE last_name = ?', (name1[contact],))
 
+      nofrows = c.fetchall()
+
+      for rows in nofrows:
+
+        return rows[0]
 
   else:
     
-    return "empty set"
+    return "No data found"
 
   conn.commit()
   conn.close()
 
 
-#createtables()
+def fetch_last_name(lname):
+
+  conn = connection()
+  c = conn.cursor()
+
+  c.execute('SELECT * from contacts WHERE last_name = ?',(lname,))
+
+  no_rows = c.fetchall()
+
+  if no_rows == []:
+
+    return True
+
+  else:
+
+    return False
+
+  conn.commit()
+  conn.close()
+
+#print(fetch_data("nan"))
+#updateTable('0725789856','Eunice')
 #insertToTable('contacts', ['Eunice','Waj','0705925435'])
-#fetchAllData()
