@@ -5,7 +5,8 @@ Usage:
     my_manager search <firstname>
     my_manager text <firstname> <message>...
     my_manager delete <firstname>
-    my_manager view 
+    my_manager view
+    my_manager viewsms 
     my_manager (-h | --help)
     my_manager (-i | --interactive)
 
@@ -99,6 +100,11 @@ class MycontactManager(cmd.Cmd):
     def do_view(self,args):
         """usage: view"""
         print(Contactmanager.view_contact())
+
+    @docopt_cmd
+    def do_viewsms(self,args):
+        """usage: viewsms """
+        print(Contactmanager.view_message())
 
     def do_quit(self, arg):
         """Quits out of Interactive Mode."""
