@@ -24,7 +24,8 @@ from docopt import docopt, DocoptExit
 import Contactmanager
 from Contactmanager import add_contact,view_contact,delete_contact,search_contact,send_text
 from Database import create_tables
-
+from termcolor import colored, cprint
+from pyfiglet import Figlet
 
 
 def docopt_cmd(func):
@@ -61,8 +62,10 @@ def docopt_cmd(func):
 
 
 class MycontactManager(cmd.Cmd):
-
-    print("Welcome To Contact Manager")
+    fig = Figlet(font='bubble')
+    intro = fig.renderText("Welcome To Contact Manager")
+    intro = colored(intro, 'cyan')
+    #print(intro)
     prompt = "cmanager->>"
     file = None
 
@@ -71,7 +74,7 @@ class MycontactManager(cmd.Cmd):
         """
         Usage: add -n <firstname> <lastname> -p <phone_no>
         """
-        Contactmanager.add_contact(args['<firstname>'],args['<lastname>'],args['<phone_no>'])
+        print(Contactmanager.add_contact(args['<firstname>'],args['<lastname>'],args['<phone_no>']))
 
     @docopt_cmd
     def do_search(self,args):
