@@ -1,5 +1,6 @@
 import Database 
 import datetime
+from termcolor import colored, cprint
 from AfricasTalkingGateway import AfricasTalkingGateway, AfricasTalkingGatewayException
 
 #This function add new contacts  by calling method insertToTable
@@ -9,20 +10,20 @@ def add_contact(fname ,lname, pnumber):
 	Database.create_tables()
 
 	if pnumber.isdigit() is False:
-		return "Sorry! Number should contain only digits"
+		return colored("Sorry! Number should contain only digits",'red')
 			
 	elif len(pnumber) != 10:
-		return "Phone number inputs more that 10"
+		return colored("Phone number inputs more that 10",'red')
 
 	elif Database.fetch_last_name(lname) is False:
-		return "Sorry! That last name already exixts"
+		return colored("Sorry! That last name already exixts",'red')
 	else:
 		pnumber = int('254'+ pnumber[1:10])
 
 		if Database.insert_to_table([fname,lname,pnumber]) is True:
-			return "Successfully added contact"
+			return colored("Successfully added contact",'green')
 		else:
-			return "Could not add contact.Contact admin@euniqx.com"
+			return colored("That phone number exists",'red')
 
 
 #This function search for  exixting contacts  by calling method fetchData with the first name of the contact
@@ -97,11 +98,16 @@ def delete_contact(fname):
 	return Database.delete_from_table(fname)
 
 
+def view_message():
+	return Database.view_sms()
 
 
 #def syncContatcs():
 
-
+#data = cursor.fetchall() #get the rows from your DB
+#variable_name = firebase.FirebaseApplication(' your firebase url')
+#result = variable_name.post('/', data)
+#print("success message")
 
 
 		
