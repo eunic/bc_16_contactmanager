@@ -25,6 +25,7 @@ def create_tables():
   conn.close()
 
 
+#Inserts to db new contact details
 def insert_to_table(valuelist):
 
   conn = connection()
@@ -52,7 +53,7 @@ def insert_to_table(valuelist):
   #conn.commit()
   #conn.close()
 
-
+#deletes from db as per user's request
 def delete_from_table(fname):
 
   conn = connection()
@@ -60,25 +61,29 @@ def delete_from_table(fname):
   try:
     contactToDelete = fetch_data(fname)
 
-    return "1 to confirm you want to delete %s" %contactToDelete
-    confirm = input()
+    if(contactToDelete is "No data found"):
 
-    if confirm == 1:
+      return "That contact does not exists."
+    else:
 
-      c.execute('DELETE FROM contacts WHERE phoneNumber = ?', (contactToDelete,))
+      print("1 to confirm you want to delete %s or 2 to ignore request" %contactToDelete)
+      confirm = input()
 
-      return "Contact %d deleted" %contactToDelete
+      if confirm == 1:
 
-    else: 
+        c.execute('DELETE FROM contacts WHERE phoneNumber = ?', (contactToDelete,))
+        conn.commit()
+        return "Contact %d deleted" %contactToDelete
 
-      return "Request Ignored"
-    conn.commit()
+      else: 
+
+        return "Request Ignored"
   except Exception as e: 
     conn.close()
 
 
 
-
+#Retrieves all contact details and display in  atable
 def fetch_all_data():
   conn = connection()
   c = conn.cursor()
@@ -102,7 +107,7 @@ def fetch_all_data():
     conn.close()
 
 
-
+#fetches data from db and returns the  phone number for specified
 def fetch_data(fname):
 
   name1 = []
@@ -131,7 +136,7 @@ def fetch_data(fname):
 
       elif no_rows1[0] > 1:
 
-        print("Which %s?" %fname)
+        print("Which %s? (Enter number in [] to select)" %fname)
 
         c.execute('SELECT last_name from contacts WHERE first_name = ?',(fname,))
         result = c.fetchall()
@@ -160,6 +165,7 @@ def fetch_data(fname):
     conn.close()
 
 
+#selcts last name like one in input and if exists alets user
 def fetch_last_name(lname):
 
   conn = connection()
@@ -176,8 +182,7 @@ def fetch_last_name(lname):
     conn.close()
 
 
-
-
+#sends sms to db
 def save_sms(valuelist):
 
   conn = connection()
@@ -187,9 +192,31 @@ def save_sms(valuelist):
 
   c.execute('INSERT INTO messages (destination,content,date_sent) values(?,?,?)', valuelist)
 
-
   conn.commit()
   conn.close()
+
+#Views all sms sent in tabular format
+def view_sms():
+  conn = connection()
+  c = conn.cursor()
+  main_row_list = []
+
+  try:
+    c.execute('SELECT * from messages')
+    no_of_rows = c.fetchall()
+
+    for row in no_of_rows:
+      row_list = list(row)
+      main_row_list.append(row_list)
+      
+    #print(main_row_list)  
+    table_contacts = main_row_list
+
+    return tabulate(table_contacts)
+    conn.commit()
+  except Exception as e:
+    return "You Have no messages to view."
+    conn.close()
 
 #print(fetch_data("nan"))
 #updateTable('0725789856','Eunice')
