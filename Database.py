@@ -2,9 +2,13 @@ import sqlite3
 from tabulate import tabulate
 
 def connection():
+  try:
+    conn = sqlite3.connect('/media/cel00584/My Docs/softwares/consoleApp/sqlite/bin/contactManager.db')
+    return conn
+  except SQlite3.Error as e:
+    return "could not connect to database"
 
-  conn = sqlite3.connect('/media/cel00584/My Docs/softwares/consoleApp/sqlite/bin/contactManager.db')
-  return conn
+
 
 def create_tables():
   conn = connection()
@@ -13,10 +17,9 @@ def create_tables():
   try:
     c.execute('CREATE TABLE IF NOT EXISTS contacts(phoneNumber INTEGER PRIMARY KEY NOT NULL, first_name varchar(50) NOT NULL, last_name varchar(250) NOT NULL)')
     c.execute('CREATE TABLE IF NOT EXISTS messages(messageID INTEGER PRIMARY KEY AUTOINCREMENT, destination INTEGER NOT NULL, content varchar(300) NOT NULL, date_sent timestamp,FOREIGN KEY(destination) REFERENCES contacts(phoneNumber))')
- 
   except sqlite3.Error,e:
 
-    print "Error: %s" %e.args[0]
+    return "Error: %s" %e.args[0]
 
   conn.commit()
   conn.close()
@@ -26,14 +29,14 @@ def insert_to_table(valuelist):
 
   conn = connection()
   c = conn.cursor()
-
-  valuelist = tuple(valuelist)
-
-  c.execute('INSERT INTO contacts (first_name,last_name,phoneNumber) values(?,?,?)', valuelist)
-
-
-  conn.commit()
-  conn.close()
+  try:
+    valuelist = tuple(valuelist)
+    c.execute('INSERT INTO contacts (first_name,last_name,phoneNumber) values(?,?,?)', valuelist)
+    conn.commit()
+    return True
+  except Exception as e:
+    return False
+    conn.close()
 
 
 #def updateTable(newNumber,fname):
@@ -54,24 +57,24 @@ def delete_from_table(fname):
 
   conn = connection()
   c = conn.cursor()
+  try:
+    contactToDelete = fetch_data(fname)
 
-  contactToDelete = fetch_data(fname)
+    return "1 to confirm you want to delete %s" %contactToDelete
+    confirm = input()
 
-  print("1 to confirm you want to delete %d" %contactToDelete)
-  confirm = input()
+    if confirm == 1:
 
-  if confirm == 1:
+      c.execute('DELETE FROM contacts WHERE phoneNumber = ?', (contactToDelete,))
 
-    c.execute('DELETE FROM contacts WHERE phoneNumber = ?', (contactToDelete,))
+      return "Contact %d deleted" %contactToDelete
 
-    print("Contact %d deleted" %contactToDelete)
+    else: 
 
-  else: 
-
-    print("Request Ignored")
-
-  conn.commit()
-  conn.close()
+      return "Request Ignored"
+    conn.commit()
+  except Exception as e: 
+    conn.close()
 
 
 
@@ -79,22 +82,24 @@ def delete_from_table(fname):
 def fetch_all_data():
   conn = connection()
   c = conn.cursor()
-
   main_row_list = []
-  c.execute('SELECT * from contacts')
-  no_of_rows = c.fetchall()
 
-  for row in no_of_rows:
-    row_list = list(row)
-    main_row_list.append(row_list)
-    
-  #print(main_row_list)  
-  table_contacts = main_row_list
+  try:
+    c.execute('SELECT * from contacts')
+    no_of_rows = c.fetchall()
 
-  return tabulate(table_contacts)
+    for row in no_of_rows:
+      row_list = list(row)
+      main_row_list.append(row_list)
+      
+    #print(main_row_list)  
+    table_contacts = main_row_list
 
-  conn.commit()
-  conn.close()
+    return tabulate(table_contacts)
+    conn.commit()
+  except Exception as e:
+    return "You Have no contacts to view. Kindly add some"
+    conn.close()
 
 
 
@@ -104,77 +109,76 @@ def fetch_data(fname):
 
   conn = connection()
   c = conn.cursor()
+  try:
+    c.execute('SELECT count(*) from contacts WHERE first_name = ?',(fname,))
 
-  c.execute('SELECT count(*) from contacts WHERE first_name = ?',(fname,))
+    no_rows = c.fetchall()
+    no_rows1 = [int(i[0]) for i in no_rows]
 
-  no_rows = c.fetchall()
-  no_rows1 = [int(i[0]) for i in no_rows]
 
-  if(no_rows1 != []):
+    if no_rows1 == [0]:
+      return "No data found"
 
-    if no_rows1[0] == 1:
+    else:
+      if no_rows1[0] == 1:
 
-      c.execute('SELECT phoneNumber from contacts WHERE first_name = ?',(fname,))
-      result = c.fetchall()
+        c.execute('SELECT phoneNumber from contacts WHERE first_name = ?',(fname,))
+        result = c.fetchall()
 
-      for res_row in result:
+        for res_row in result:
 
-        return res_row[0]
+          return res_row[0]
 
-    elif no_rows1[0] > 1:
+      elif no_rows1[0] > 1:
 
-      print("Which %s?" %fname)
+        print("Which %s?" %fname)
 
-      c.execute('SELECT last_name from contacts WHERE first_name = ?',(fname,))
-      result = c.fetchall()
+        c.execute('SELECT last_name from contacts WHERE first_name = ?',(fname,))
+        result = c.fetchall()
 
-      for res_row1 in result:
+        for res_row1 in result:
 
-        name1.append(res_row1[0])
+          name1.append(res_row1[0])
 
-      for i in range(0,len(name1)):
+        for i in range(0,len(name1)):
 
-         print("[%d] %s" %(i, name1[i]))
+          print("[%d] %s" %(i, name1[i]))
 
-      contact = int(input())
+        contact = int(input())
 
-      c.execute('SELECT phoneNumber FROM contacts WHERE last_name = ?', (name1[contact],))
+        c.execute('SELECT phoneNumber FROM contacts WHERE last_name = ?', (name1[contact],))
 
-      nofrows = c.fetchall()
+        nofrows = c.fetchall()
 
-      for rows in nofrows:
+        for rows in nofrows:
 
-        return rows[0]
+          return rows[0]
+    conn.commit()
+  except Exception as e:
+    return "Sorry. Wrong input"
 
-  else:
-    
-    return "No data found"
-
-  conn.commit()
-  conn.close()
+    conn.close()
 
 
 def fetch_last_name(lname):
 
   conn = connection()
   c = conn.cursor()
+  try:
+    c.execute('SELECT * from contacts WHERE last_name = ?',(lname,))
+    no_rows = c.fetchall()
+    if no_rows == []:
+      return True
+    else:
+      return False
+    conn.commit()
+  except Exception as e:
+    conn.close()
 
-  c.execute('SELECT * from contacts WHERE last_name = ?',(lname,))
 
-  no_rows = c.fetchall()
 
-  if no_rows == []:
 
-    return True
-
-  else:
-
-    return False
-
-  conn.commit()
-  conn.close()
-
-def insert_message(detination,message):
+def save_sms(valuelist):
 
   conn = connection()
   c = conn.cursor()
