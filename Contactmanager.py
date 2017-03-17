@@ -1,4 +1,5 @@
 import Database 
+import datetime
 from AfricasTalkingGateway import AfricasTalkingGateway, AfricasTalkingGatewayException
 
 #This function add new contacts  by calling method insertToTable
@@ -7,43 +8,28 @@ def add_contact(fname ,lname, pnumber):
 	
 	Database.create_tables()
 
-	if fname != "" and lname != "":
+	if pnumber.isdigit() is False:
+		return "Sorry! Number should contain only digits"
+			
+	elif len(pnumber) != 10:
+		return "Phone number inputs more that 10"
 
-		if pnumber.isdigit():
+	elif Database.fetch_last_name(lname) is False:
+		return "Sorry! That last name already exixts"
+	else:
+		pnumber = int('254'+ pnumber[1:10])
 
-			if len(pnumber) == 10:
-
-				pnumber = int('254'+ pnumber[1:10])
-
-
-				if Database.fetch_last_name(lname) is True:
-
-						Database.insert_to_table([fname,lname,pnumber])
-
-				else:
-					return "Sorry! That last name already exixts"
-
-			else:
-
-				return "Phone number inputs more that 10"
+		if Database.insert_to_table([fname,lname,pnumber]) is True:
+			return "Successfully added contact"
 		else:
-
-			return "Sorry! Number should be only digits"
-
-	return "Sorry! Names should  not be empty"
+			return "Could not add contact.Contact admin@euniqx.com"
 
 
 #This function search for  exixting contacts  by calling method fetchData with the first name of the contact
 
 def search_contact(fname):
 
-	if fname != "":
-
-		return Database.fetch_data(fname)
-
-	else:
-
-		return "Name should not be empty"
+	return Database.fetch_data(fname)
 
 
 
@@ -51,29 +37,29 @@ def search_contact(fname):
 
 def send_text(fname,mess):
 	listtext = []
+	now = datetime.datetime.now()
 
 	if fname != "":
 
 		to = str(Database.fetch_data(fname))
 		to = '+'+ to[0:12]
-		print(to)
 		message = str(mess)
 
 		username = "eunic"
 		apikey   = "dfc6448020ba28879c4f39b39bbc26c80ab1ed3e1ec6cd375d1ff018b1b9350d"
 
 		gateway = AfricasTalkingGateway(username, apikey)
-		print(to,message)
 
 		try:
 
 			results = gateway.sendMessage(to, message)
-			print(results)
+			listtext =[to,message,now.strftime("%Y-%m-%d %H:%M")]
+			Database.save_sms(listtext)
 
 			for recipient in results:
 
-
-				return 'number=%s;status=%s;messageId=%s;cost=%s' % (recipient['number'],recipient['status'],recipient['messageId'],recipient['cost'])
+				return 'number=%s;status=%s;messageId=%s' % (recipient['number'],recipient['status'],recipient['messageId'])
+			
 
 		except AfricasTalkingGatewayException, e:
 
@@ -81,7 +67,7 @@ def send_text(fname,mess):
 	
 	else:
 
-		print("Name should not be empty")
+		return "Name should not be empty"
 
 
 #This function edits conatct  by calling method updateTable
@@ -108,13 +94,7 @@ def view_contact():
 
 def delete_contact(fname):
 
-	if fname != "":
-
-		return Database.delete_from_table(fname)
-
-	else:
-
-		return "Name should not be empty"
+	return Database.delete_from_table(fname)
 
 
 
